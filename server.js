@@ -225,7 +225,7 @@ app.get("/shop/:id", async (req, res) => {
 });
 
 // Route to get items based on query parameters (category or minDate)
-app.get("/items", async (req, res) => {
+app.get("/items", ensureLogin, async (req, res) => {
   try {
     let itemsFunctions;
 
@@ -253,7 +253,7 @@ app.get("/items", async (req, res) => {
   }
 });
 // Route to get all categories
-app.get("/categories", (req, res) => {
+app.get("/categories", ensureLogin, (req, res) => {
   storeService
     .getCategories()
     .then((data) => {
@@ -269,7 +269,7 @@ app.get("/categories", (req, res) => {
     });
 });
 // Route to render the "Add Item" page
-app.get("/items/add", (req, res) => {
+app.get("/items/add", ensureLogin, (req, res) => {
   storeService
     .getCategories()
     .then((data) => {
@@ -280,52 +280,57 @@ app.get("/items/add", (req, res) => {
     });
 });
 // Route to handle the form submission for adding an item
-app.post("/items/add", upload.single("featureImage"), function (req, res) {
-  if (req.file) {
-    // Upload item image
-    let streamUpload = (req) => {
-      return new Promise((resolve, reject) => {
-        let stream = cloudinary.uploader.upload_stream((error, result) => {
-          if (result) {
-            resolve(result);
-          } else {
-            reject(error);
-          }
+app.post(
+  "/items/add",
+  ensureLogin,
+  upload.single("featureImage"),
+  function (req, res) {
+    if (req.file) {
+      // Upload item image
+      let streamUpload = (req) => {
+        return new Promise((resolve, reject) => {
+          let stream = cloudinary.uploader.upload_stream((error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          });
+
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
         });
+      };
 
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      async function upload(req) {
+        let result = await streamUpload(req);
+        console.log(result);
+        return result;
+      }
+
+      upload(req).then((uploaded) => {
+        processItem(uploaded.url);
       });
-    };
-
-    async function upload(req) {
-      let result = await streamUpload(req);
-      console.log(result);
-      return result;
+    } else {
+      processItem("");
     }
 
-    upload(req).then((uploaded) => {
-      processItem(uploaded.url);
-    });
-  } else {
-    processItem("");
+    function processItem(imageUrl) {
+      req.body.featureImage = imageUrl;
+
+      const itemData = req.body;
+
+      storeService
+        .addItem(itemData)
+
+        .then(() => res.redirect("/items"))
+        .catch((err) => {
+          res.status(500).json({ message: err });
+        });
+    }
   }
-
-  function processItem(imageUrl) {
-    req.body.featureImage = imageUrl;
-
-    const itemData = req.body;
-
-    storeService
-      .addItem(itemData)
-
-      .then(() => res.redirect("/items"))
-      .catch((err) => {
-        res.status(500).json({ message: err });
-      });
-  }
-});
+);
 // Route to get an item by its ID
-app.get("/item/:itemId", (req, res) => {
+app.get("/item/:itemId", ensureLogin, (req, res) => {
   storeService
     .getItemById(req.params.itemId)
     .then((item) => {
@@ -337,12 +342,12 @@ app.get("/item/:itemId", (req, res) => {
 });
 
 // Route to render the "Add Category" page
-app.get("/categories/add", (req, res) => {
+app.get("/categories/add", ensureLogin, (req, res) => {
   res.render("addCategory");
 });
 
 // Route to handle the form submission for adding a category
-app.post("/categories/add", (req, res) => {
+app.post("/categories/add", ensureLogin, (req, res) => {
   storeService
     .addCategory(req.body)
     .then(() => {
@@ -354,7 +359,7 @@ app.post("/categories/add", (req, res) => {
 });
 
 // Route to delete category by its ID
-app.get("/categories/delete/:id", (req, res) => {
+app.get("/categories/delete/:id", ensureLogin, (req, res) => {
   storeService
     .deleteCategoryById(req.params.id)
     .then(() => {
@@ -366,7 +371,7 @@ app.get("/categories/delete/:id", (req, res) => {
 });
 
 // Route to delete an item by its ID
-app.get("/items/delete/:id", (req, res) => {
+app.get("/items/delete/:id", ensureLogin, (req, res) => {
   storeService
     .deletePostById(req.params.id)
     .then(() => {
