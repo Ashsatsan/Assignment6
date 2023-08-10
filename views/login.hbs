@@ -1,0 +1,30 @@
+<div class="card bg-transparent">
+    <div class="card-body">
+        <h2 class="card-title">Login </h2>
+        <hr />
+        {{#if errorMessage}}
+            <div class="alert alert-danger"> <strong>Error:</strong> {{errorMessage}}</div>
+        {{/if}}
+        <form action="/login" method="post" >
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="userName" name="userName" placeholder="User Name" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-2">
+                <div class="col-12">
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-2">
+                <div class="col">
+                    <button type="submit" class="btn btn-primary float-right">Login</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
