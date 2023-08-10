@@ -6,7 +6,7 @@
 * 
 *  Name: Abhijeet Singh Hundal_ Student ID: 169721214 Date: 10-08-2023
 *
-*  Cyclic Web App URL: https://pink-muddy-goose.cyclic.app
+*  Cyclic Web App URL: https://long-gazelle.cyclic.app/
 *
 *  GitHub Repository URL: https://github.com/Ashsatsan/Assignment6.git
 *
@@ -445,6 +445,7 @@ app.use((req, res) => {
 // Initialize the server and start listening on the specified port
 storeService
   .initialize()
+  .then(authData.initialize)
   .then(() => {
     app.listen(port, () => {
       console.log("Express http server listening on " + port);

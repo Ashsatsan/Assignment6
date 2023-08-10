@@ -124,3 +124,9 @@ const checkUser = function (userData) {
       });
   });
 };
+
+module.exports = {
+  initialize,
+  checkUser,
+  registerUser,
+};
